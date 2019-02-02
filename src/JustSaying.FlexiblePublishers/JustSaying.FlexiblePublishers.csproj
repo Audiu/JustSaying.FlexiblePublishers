@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+<PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Mike Goodfellow</Authors>
+    <Company>Audiu Ltd.</Company>
+  </PropertyGroup>
+
+<ItemGroup>
+  <PackageReference Include="JustSaying" Version="6.0.1" />
+</ItemGroup>
+
+</Project>
