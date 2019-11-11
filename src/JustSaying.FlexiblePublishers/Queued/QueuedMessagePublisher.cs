@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JustSaying.Messaging;
@@ -24,39 +25,35 @@ namespace JustSaying.FlexiblePublishers.Queued
 
         public Task PublishAsync(Message message)
         {
-            _queuedMessages.Enqueue(new MessageContainer
-            {
-                Message = message,
-                IsWhitelisted = false
-            });
-
-            return Task.CompletedTask;
+            return PublishAsync(message, false, CancellationToken.None);
         }
 
         public Task PublishAsync(Message message, CancellationToken cancellationToken)
         {
-            _queuedMessages.Enqueue(new MessageContainer
-            {
-                Message = message,
-                IsWhitelisted = false
-            });
-
-            return Task.CompletedTask;
+            return PublishAsync(message, false, cancellationToken);
         }
 
         public Task PublishAsync(Message message, bool isWhitelisted)
         {
-            _queuedMessages.Enqueue(new MessageContainer
-            {
-                Message = message,
-                IsWhitelisted = isWhitelisted
-            });
-
-            return Task.CompletedTask;
+            return PublishAsync(message, isWhitelisted, CancellationToken.None);
         }
 
         public Task PublishAsync(Message message, bool isWhitelisted, CancellationToken cancellationToken)
         {
+            if (message == null)
+            {
+                _logger.LogWarning("Received null message content, not queueing message");
+
+                return Task.CompletedTask;
+            }
+
+            if (_queuedMessages.Any(x => x.Message.Equals(message)))
+            {
+                _logger.LogWarning($"Received duplicated message content, not queueing message - message content: {JsonConvert.SerializeObject(message)}");
+
+                return Task.CompletedTask;
+            }
+
             _queuedMessages.Enqueue(new MessageContainer
             {
                 Message = message,
