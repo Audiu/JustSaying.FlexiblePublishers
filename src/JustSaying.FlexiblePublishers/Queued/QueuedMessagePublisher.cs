@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JustSaying.Messaging;
+using JustSaying.Messaging.Interrogation;
 using JustSaying.Models;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -23,22 +24,17 @@ namespace JustSaying.FlexiblePublishers.Queued
             _logger = loggerFactory.CreateLogger<QueuedMessagePublisher>();
         }
 
-        public Task PublishAsync(Message message)
-        {
-            return PublishAsync(message, false, CancellationToken.None);
-        }
-
         public Task PublishAsync(Message message, CancellationToken cancellationToken)
         {
-            return PublishAsync(message, false, cancellationToken);
+            return PublishAsync(message, null, false, cancellationToken);
         }
 
-        public Task PublishAsync(Message message, bool isWhitelisted)
+        public Task PublishAsync(Message message, PublishMetadata metadata, CancellationToken cancellationToken)
         {
-            return PublishAsync(message, isWhitelisted, CancellationToken.None);
+            return PublishAsync(message, metadata, false, cancellationToken);
         }
 
-        public Task PublishAsync(Message message, bool isWhitelisted, CancellationToken cancellationToken)
+        public Task PublishAsync(Message message, PublishMetadata metadata, bool isWhitelisted, CancellationToken cancellationToken)
         {
             if (message == null)
             {
@@ -54,11 +50,7 @@ namespace JustSaying.FlexiblePublishers.Queued
                 return Task.CompletedTask;
             }
 
-            _queuedMessages.Enqueue(new MessageContainer
-            {
-                Message = message,
-                IsWhitelisted = isWhitelisted
-            });
+            _queuedMessages.Enqueue(new MessageContainer(message, metadata, isWhitelisted));
 
             return Task.CompletedTask;
         }
@@ -99,7 +91,14 @@ namespace JustSaying.FlexiblePublishers.Queued
                         {
                             try
                             {
-                                await _messagePublisher.PublishAsync(container.Message, cancellationToken);
+                                if (container.Metadata != null)
+                                {
+                                    await _messagePublisher.PublishAsync(container.Message, container.Metadata, cancellationToken);
+                                }
+                                else
+                                {
+                                    await _messagePublisher.PublishAsync(container.Message, cancellationToken);
+                                }
 
                                 _logger.LogInformation($"Published message successfully - MessageType: {messageType}");
                             }
@@ -119,6 +118,16 @@ namespace JustSaying.FlexiblePublishers.Queued
 
                 _logger.LogInformation("Finished sending queued messages");
             }
+        }
+
+        public InterrogationResult Interrogate()
+        {
+            return _messagePublisher.Interrogate();
+        }
+
+        public Task StartAsync(CancellationToken stoppingToken)
+        {
+            return _messagePublisher.StartAsync(stoppingToken);
         }
     }
 }
