@@ -1,15 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Mike Goodfellow</Authors>
     <Company>Audiu Ltd.</Company>
   </PropertyGroup>
 
 <ItemGroup>
-  <PackageReference Include="JustSaying" Version="7.1.0" />
-  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
+  <PackageReference Include="JustSaying" Version="7.1.1" />
+  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
   <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 </ItemGroup>
 
