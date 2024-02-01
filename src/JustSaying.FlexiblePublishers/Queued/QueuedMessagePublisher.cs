@@ -33,6 +33,11 @@ namespace JustSaying.FlexiblePublishers.Queued
         {
             return PublishAsync(message, metadata, false, cancellationToken);
         }
+        
+        public Task PublishAsync(Message message, bool isWhitelisted, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return PublishAsync(message, null, isWhitelisted, cancellationToken);
+        }
 
         public Task PublishAsync(Message message, PublishMetadata metadata, bool isWhitelisted, CancellationToken cancellationToken)
         {
@@ -54,7 +59,7 @@ namespace JustSaying.FlexiblePublishers.Queued
 
             return Task.CompletedTask;
         }
-
+        
         public int QueuedItems => _queuedMessages.Count;
 
         public async Task ProcessQueueAsync(bool onlySendWhitelisted, CancellationToken cancellationToken)
@@ -86,7 +91,6 @@ namespace JustSaying.FlexiblePublishers.Queued
                         { "messageBody", JsonConvert.SerializeObject(container.Message) }
                     }))
                     {
-
                         if (!onlySendWhitelisted || container.IsWhitelisted)
                         {
                             try

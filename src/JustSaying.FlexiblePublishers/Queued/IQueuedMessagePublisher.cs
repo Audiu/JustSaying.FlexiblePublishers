@@ -9,6 +9,8 @@ namespace JustSaying.FlexiblePublishers.Queued
     {
         Task PublishAsync(Message message, PublishMetadata metadata, bool isWhitelisted, CancellationToken cancellationToken = default(CancellationToken));
         
+        Task PublishAsync(Message message, bool isWhitelisted, CancellationToken cancellationToken = default(CancellationToken));
+        
         int QueuedItems { get; }
 
         Task ProcessQueueAsync(bool onlySendWhitelisted, CancellationToken cancellationToken);
