@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+
+  localstack:
+    container_name: "${LOCALSTACK_DOCKER_NAME:-localstack-main}"
+    image: localstack/localstack
+    ports:
+      - "127.0.0.1:4566:4566"            # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559"  # external services port range
+    environment:
+      # LocalStack configuration: https://docs.localstack.cloud/references/configuration/
+      - DEBUG=${DEBUG:-0}
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      ls:
+        # Set the container IP address in the 10.0.2.0/24 subnet
+        ipv4_address: 10.0.2.20
+
+  testrunner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: testrunner
+      args:
+        VERSION: ${BUILD_NUMBER}
+    depends_on:
+      localstack:
+        condition: service_healthy
+    dns:
+      # Set the DNS server to be the LocalStack container
+      - 10.0.2.20
+    networks:
+      - ls
+
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Integration
+
+networks:
+  ls:
+    ipam:
+      config:
+        # Specify the subnet range for IP address allocation
+        - subnet: 10.0.2.0/24

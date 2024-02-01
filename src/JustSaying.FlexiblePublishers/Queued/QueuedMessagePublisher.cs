@@ -14,13 +14,14 @@ namespace JustSaying.FlexiblePublishers.Queued
     public class QueuedMessagePublisher : IQueuedMessagePublisher
     {
         private readonly ILogger<IQueuedMessagePublisher> _logger;
-        private readonly IMessagePublisher _messagePublisher;
 
         private readonly Queue<MessageContainer> _queuedMessages = new Queue<MessageContainer>();
 
-        public QueuedMessagePublisher(ILoggerFactory loggerFactory, IMessagePublisher messagePublisher)
+        private static Lazy<IMessagePublisher> _lazyMessagePublisher;
+
+        public QueuedMessagePublisher(ILoggerFactory loggerFactory, Func<IMessagePublisher> messagePublisherFactory)
         {
-            _messagePublisher = messagePublisher;
+            _lazyMessagePublisher ??= new Lazy<IMessagePublisher>(messagePublisherFactory);
             _logger = loggerFactory.CreateLogger<QueuedMessagePublisher>();
         }
 
@@ -33,7 +34,7 @@ namespace JustSaying.FlexiblePublishers.Queued
         {
             return PublishAsync(message, metadata, false, cancellationToken);
         }
-        
+
         public Task PublishAsync(Message message, bool isWhitelisted, CancellationToken cancellationToken = default(CancellationToken))
         {
             return PublishAsync(message, null, isWhitelisted, cancellationToken);
@@ -59,10 +60,10 @@ namespace JustSaying.FlexiblePublishers.Queued
 
             return Task.CompletedTask;
         }
-        
+
         public int QueuedItems => _queuedMessages.Count;
 
-        public async Task ProcessQueueAsync(bool onlySendWhitelisted, CancellationToken cancellationToken)
+        public async Task ProcessQueueAsync(bool onlySendWhitelisted, CancellationToken cancellationToken = default(CancellationToken))
         {
             var tracer = Guid.NewGuid();
 
@@ -76,7 +77,7 @@ namespace JustSaying.FlexiblePublishers.Queued
                     return;
                 }
 
-                _logger.LogInformation($"Sending {_queuedMessages.Count} queued messages"); 
+                _logger.LogInformation($"Sending {_queuedMessages.Count} queued messages");
 
                 while (QueuedItems > 0)
                 {
@@ -97,11 +98,11 @@ namespace JustSaying.FlexiblePublishers.Queued
                             {
                                 if (container.Metadata != null)
                                 {
-                                    await _messagePublisher.PublishAsync(container.Message, container.Metadata, cancellationToken);
+                                    await _lazyMessagePublisher.Value.PublishAsync(container.Message, container.Metadata, cancellationToken);
                                 }
                                 else
                                 {
-                                    await _messagePublisher.PublishAsync(container.Message, cancellationToken);
+                                    await _lazyMessagePublisher.Value.PublishAsync(container.Message, cancellationToken);
                                 }
 
                                 _logger.LogInformation($"Published message successfully - MessageType: {messageType}");
@@ -126,12 +127,12 @@ namespace JustSaying.FlexiblePublishers.Queued
 
         public InterrogationResult Interrogate()
         {
-            return _messagePublisher.Interrogate();
+            return _lazyMessagePublisher.Value.Interrogate();
         }
 
         public Task StartAsync(CancellationToken stoppingToken)
         {
-            return _messagePublisher.StartAsync(stoppingToken);
+            return _lazyMessagePublisher.Value.StartAsync(stoppingToken);
         }
     }
 }

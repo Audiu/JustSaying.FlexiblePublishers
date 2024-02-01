@@ -1,17 +1,18 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using JustSaying.Fluent;
 using JustSaying.Messaging.Middleware;
 
 namespace JustSaying.FlexiblePublishers.Queued.Middleware
 {
     public class QueuedMessagesMiddleware : MiddlewareBase<HandleMessageContext, bool>
     {
-        private readonly IQueuedMessagePublisher _queuedMessagePublisher;
+        private readonly IServiceResolver _resolver;
 
-        public QueuedMessagesMiddleware(IQueuedMessagePublisher queuedMessagePublisher)
+        public QueuedMessagesMiddleware(IServiceResolver resolver)
         {
-            _queuedMessagePublisher = queuedMessagePublisher;
+            _resolver = resolver;
         }
 
         protected override async Task<bool> RunInnerAsync(
@@ -19,31 +20,33 @@ namespace JustSaying.FlexiblePublishers.Queued.Middleware
             Func<CancellationToken, Task<bool>> func,
             CancellationToken stoppingToken)
         {
+            var queuedMessagePublisher = _resolver.ResolveService<IQueuedMessagePublisher>();
+
             try
             {
                 var result = await func(stoppingToken);
-            
+
                 if (result)
                 {
-                    await _queuedMessagePublisher.ProcessQueueAsync(
+                    await queuedMessagePublisher.ProcessQueueAsync(
                         onlySendWhitelisted: false,
                         cancellationToken: stoppingToken);
                 }
                 else
                 {
-                    await _queuedMessagePublisher.ProcessQueueAsync(
+                    await queuedMessagePublisher.ProcessQueueAsync(
                         onlySendWhitelisted: true,
                         cancellationToken: stoppingToken);
                 }
-            
+
                 return result;
             }
             catch (Exception)
             {
-                await _queuedMessagePublisher.ProcessQueueAsync(
+                await queuedMessagePublisher.ProcessQueueAsync(
                     onlySendWhitelisted: true,
                     cancellationToken: stoppingToken);
-            
+
                 throw;
             }
         }

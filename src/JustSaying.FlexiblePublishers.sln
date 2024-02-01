@@ -8,7 +8,15 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2D05F95D-7F3C-465B-8AEE-FC8DAE0983E5}"
 	ProjectSection(SolutionItems) = preProject
 		..\README.md = ..\README.md
+		docker-compose-reset-containers.sh = docker-compose-reset-containers.sh
+		docker-compose-run-tests.sh = docker-compose-run-tests.sh
+		docker-compose.yml = docker-compose.yml
+		Dockerfile = Dockerfile
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{C58CE1B1-E907-40AA-B9DD-1E71B58B9D36}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JustSaying.FlexiblePublishers.IntegrationTests", "JustSaying.FlexiblePublishers.IntegrationTests\JustSaying.FlexiblePublishers.IntegrationTests.csproj", "{C17C9370-C3E2-4967-8448-5CB1D41660A5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,11 +28,18 @@ Global
 		{1389CCDC-0679-4C96-89D1-9905A8321DA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1389CCDC-0679-4C96-89D1-9905A8321DA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1389CCDC-0679-4C96-89D1-9905A8321DA8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C17C9370-C3E2-4967-8448-5CB1D41660A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C17C9370-C3E2-4967-8448-5CB1D41660A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C17C9370-C3E2-4967-8448-5CB1D41660A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C17C9370-C3E2-4967-8448-5CB1D41660A5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {541E6A23-DF1F-452E-B655-877497E5CE4B}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C17C9370-C3E2-4967-8448-5CB1D41660A5} = {C58CE1B1-E907-40AA-B9DD-1E71B58B9D36}
 	EndGlobalSection
 EndGlobal

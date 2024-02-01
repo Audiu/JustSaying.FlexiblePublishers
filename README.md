@@ -6,13 +6,13 @@ A set of [JustSaying](https://github.com/justeattakeaway/JustSaying) IMessagePub
 
 A publisher that queues messages to be published at a later time. This is useful for when you want to publish messages in UoW functionality and you don't want to send the messages until the UoW is committed.
 
-When publishing a message it can be optionally marked as "isWhitelisted". When processing the queue, all messages can be sent or only the ones marked as "isWhitelisted".
+When publishing a message it can be optionally marked as `isWhitelisted`. When processing the queue, all messages can be sent or only the ones marked as `isWhitelisted`.
 
-A middleware is provided which add this functionality onto IHandlerAsync<> handlers automatically.
+A middleware is provided which add this functionality onto `IHandlerAsync<>` handlers automatically.
 
 ### Usage
 
-Either the IQueuedMessagePublisher interface can be registered into DI which wraps the IMessagePublisher instance, OR the IQueuedMessagePublisher can be registered for both IMessagePublisher resolutions and IQueuedMessagePublisher resolutions, which is better as 3rd party code messages will be queued into the UoW as expected.
+Either the `IQueuedMessagePublisher` interface can be registered into DI which wraps the `IMessagePublisher` instance, OR the `IQueuedMessagePublisher` can be registered for both `IMessagePublisher` resolutions and `IQueuedMessagePublisher` resolutions, which is better as 3rd party code messages will be queued into the UoW as expected.
 
 These examples use SimpleInjector but the theory is the same for all.
 
@@ -24,7 +24,7 @@ Setting up:
 
 // Approach to wrap the built IMessagePublisher into a QueuedMessagePublisher, then register this as both IMessagePublisher and IQueuedMessagePublisher
 var messagingRegistration = Lifestyle.Scoped.CreateRegistration(
-    () => new QueuedMessagePublisher(loggerFactory, builder.BuildPublisher()),
+    () => new QueuedMessagePublisher(loggerFactory, () => builder.BuildPublisher()),
     container);
 
 container.AddRegistration(typeof(IMessagePublisher), messagingRegistration);
