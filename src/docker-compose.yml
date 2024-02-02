@@ -21,8 +21,8 @@ services:
 
   testrunner:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../
+      dockerfile: src/Dockerfile
       target: testrunner
       args:
         VERSION: ${BUILD_NUMBER}

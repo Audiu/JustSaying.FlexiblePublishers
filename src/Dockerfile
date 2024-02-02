@@ -9,8 +9,9 @@ EXPOSE 443
 # For running tests, target the build container and run dotnet test within this container
 FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 ARG VERSION
-WORKDIR /src
+WORKDIR .
 COPY . .
+WORKDIR /src
 RUN dotnet build /p:Version=$VERSION -c Release -o /app
 
 # Our testrunner target
