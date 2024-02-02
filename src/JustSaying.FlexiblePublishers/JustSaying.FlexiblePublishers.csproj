@@ -5,6 +5,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Mike Goodfellow</Authors>
     <Company>Audiu Ltd.</Company>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
 <ItemGroup>
@@ -13,4 +14,7 @@
   <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 </Project>
