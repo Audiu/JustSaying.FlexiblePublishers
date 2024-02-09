@@ -89,7 +89,6 @@ namespace JustSaying.FlexiblePublishers.Queued
                     {
                         { "isWhitelisted", container.IsWhitelisted },
                         { "messageType", messageType },
-                        { "messageBody", JsonConvert.SerializeObject(container.Message) }
                     }))
                     {
                         if (!onlySendWhitelisted || container.IsWhitelisted)
