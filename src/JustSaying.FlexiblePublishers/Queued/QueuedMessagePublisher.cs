@@ -98,11 +98,11 @@ namespace JustSaying.FlexiblePublishers.Queued
                             {
                                 if (container.Metadata != null)
                                 {
-                                    await _lazyMessagePublisher.Value.PublishAsync(container.Message, container.Metadata, cancellationToken);
+                                    await _lazyMessagePublisher.Value.PublishAsync(container.Message, container.Metadata, cancellationToken).ConfigureAwait(false);
                                 }
                                 else
                                 {
-                                    await _lazyMessagePublisher.Value.PublishAsync(container.Message, cancellationToken);
+                                    await _lazyMessagePublisher.Value.PublishAsync(container.Message, cancellationToken).ConfigureAwait(false);
                                 }
 
                                 _logger.LogInformation($"Published message successfully - MessageType: {messageType}");

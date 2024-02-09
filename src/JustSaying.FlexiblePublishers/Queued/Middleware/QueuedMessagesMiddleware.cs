@@ -30,13 +30,13 @@ namespace JustSaying.FlexiblePublishers.Queued.Middleware
                 {
                     await queuedMessagePublisher.ProcessQueueAsync(
                         onlySendWhitelisted: false,
-                        cancellationToken: stoppingToken);
+                        cancellationToken: stoppingToken).ConfigureAwait(false);
                 }
                 else
                 {
                     await queuedMessagePublisher.ProcessQueueAsync(
                         onlySendWhitelisted: true,
-                        cancellationToken: stoppingToken);
+                        cancellationToken: stoppingToken).ConfigureAwait(false);
                 }
 
                 return result;
@@ -45,7 +45,7 @@ namespace JustSaying.FlexiblePublishers.Queued.Middleware
             {
                 await queuedMessagePublisher.ProcessQueueAsync(
                     onlySendWhitelisted: true,
-                    cancellationToken: stoppingToken);
+                    cancellationToken: stoppingToken).ConfigureAwait(false);
 
                 throw;
             }
