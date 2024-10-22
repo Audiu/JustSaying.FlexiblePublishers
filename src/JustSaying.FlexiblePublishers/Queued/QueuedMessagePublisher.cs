@@ -40,7 +40,7 @@ namespace JustSaying.FlexiblePublishers.Queued
             return PublishAsync(message, null, isWhitelisted, cancellationToken);
         }
 
-        public Task PublishAsync(Message message, PublishMetadata metadata, bool isWhitelisted, CancellationToken cancellationToken)
+        public virtual Task PublishAsync(Message message, PublishMetadata metadata, bool isWhitelisted, CancellationToken cancellationToken)
         {
             if (message == null)
             {
