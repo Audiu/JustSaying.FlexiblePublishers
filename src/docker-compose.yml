@@ -39,7 +39,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Integration
     volumes:
       - test-results:/test-results
-      
+
 networks:
   ls:
     ipam:

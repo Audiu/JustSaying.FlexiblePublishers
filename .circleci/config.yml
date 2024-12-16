@@ -36,6 +36,7 @@ jobs:
             # We handle the transform from trx to junit within the docker compose testrunner step
             # see: https://stackoverflow.com/questions/35406213/how-to-copy-data-from-docker-volume-to-host
             command: |
+              cp README.md src/
               docker-compose -f ./src/docker-compose.yml up --build --abort-on-container-exit --exit-code-from testrunner
               mkdir test-results
               docker volume ls
@@ -46,7 +47,7 @@ jobs:
         - run:
             name: "Publish NuGet packages"
             command: |
-              docker build -f ./src/Dockerfile --pull --build-arg VERSION=$TAG --build-arg NUGET_URL=$NUGET_API_URL --build-arg NUGET_KEY=$NUGET_API_KEY --target package -t justsaying-fp:$TAG ./src
+              docker build -f ./src/Dockerfile --pull --build-arg VERSION=$TAG --build-arg NUGET_URL=$NUGET_API_URL --build-arg NUGET_KEY=$NUGET_API_KEY --target package -t justsaying-fp:$TAG .
   
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/workflows/ & https://circleci.com/docs/configuration-reference/#workflows
