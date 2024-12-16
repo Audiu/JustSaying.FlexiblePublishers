@@ -17,7 +17,7 @@ RUN dotnet build /p:Version=$VERSION -c Release -o /app
 # Our testrunner target
 FROM build AS testrunner
 WORKDIR /src
-ENTRYPOINT ["dotnet", "test", "--test-adapter-path:/root/.nuget/packages/teamcity.vstest.testadapter/1.0.39/build/_common/vstest15/", "--logger:teamcity"]
+ENTRYPOINT ["sh", "test_and_transform.sh"]
 
 # Our package target
 FROM build AS package
