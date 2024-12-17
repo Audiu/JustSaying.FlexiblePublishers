@@ -21,7 +21,7 @@ WORKDIR /src
 ENTRYPOINT ["sh", "test_and_transform.sh"]
 
 # Our package target
-FROM build AS package
+FROM build AS publish
 ARG NUGET_KEY
 ARG NUGET_URL
 WORKDIR /app
