@@ -37,6 +37,8 @@ services:
 
     environment:
       - ASPNETCORE_ENVIRONMENT=Integration
+    volumes:
+      - test-results:/test-results
 
 networks:
   ls:
@@ -44,3 +46,6 @@ networks:
       config:
         # Specify the subnet range for IP address allocation
         - subnet: 10.0.2.0/24
+
+volumes:
+  test-results:
