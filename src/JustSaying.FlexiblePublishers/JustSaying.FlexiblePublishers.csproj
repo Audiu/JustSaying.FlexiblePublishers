@@ -9,9 +9,9 @@
   </PropertyGroup>
 
 <ItemGroup>
-  <PackageReference Include="JustSaying" Version="7.1.1" />
-  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
-  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  <PackageReference Include="JustSaying" Version="8.0.0" />
+  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+  <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 </ItemGroup>
 
   <ItemGroup>
