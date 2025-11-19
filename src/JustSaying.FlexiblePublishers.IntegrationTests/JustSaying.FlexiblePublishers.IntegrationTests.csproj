@@ -9,7 +9,7 @@
     <ItemGroup>
         <PackageReference Include="FluentAssertions" Version="8.8.0" />
         <PackageReference Include="JustSaying" Version="8.0.0" />
-        <PackageReference Include="JustSaying.Extensions.DependencyInjection.SimpleInjector" Version="8.1.27-pre.3" />
+        <PackageReference Include="JustSaying.Extensions.DependencyInjection.SimpleInjector" Version="8.1.36-pre.3" />
         <PackageReference Include="JustSaying.Models" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />

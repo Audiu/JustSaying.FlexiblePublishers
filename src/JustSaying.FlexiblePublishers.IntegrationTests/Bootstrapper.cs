@@ -144,10 +144,10 @@ public class Bootstrapper
         container.AddJustSayingNoOpMessageMonitor();
 
         var builder = container.AddJustSayingReturnBuilder(
-            new AwsConfig(null, null, "eu-west-1", _localStackServiceUrl),
             new MessagingConfig{
                 Region = "eu-west-1",
             },
+            _localStackServiceUrl,
             builder =>
             {
                 builder.Subscriptions(
