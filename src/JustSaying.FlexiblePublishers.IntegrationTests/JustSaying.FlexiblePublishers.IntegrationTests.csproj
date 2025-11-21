@@ -9,7 +9,7 @@
     <ItemGroup>
         <PackageReference Include="FluentAssertions" Version="8.8.0" />
         <PackageReference Include="JustSaying" Version="8.0.0" />
-        <PackageReference Include="JustSaying.Extensions.DependencyInjection.SimpleInjector" Version="8.1.36-pre.3" />
+        <PackageReference Include="JustSaying.Extensions.DependencyInjection.SimpleInjector" Version="8.1.42" />
         <PackageReference Include="JustSaying.Models" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
@@ -30,7 +30,7 @@
         <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.2" />
         <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
         <PackageReference Include="SimpleInjector" Version="5.5.0" />
-        <PackageReference Include="Testcontainers.LocalStack" Version="4.7.0" />
+        <PackageReference Include="Testcontainers.LocalStack" Version="4.8.1" />
     </ItemGroup>
 
     <ItemGroup>

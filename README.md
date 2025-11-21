@@ -2,6 +2,8 @@
 
 A set of [JustSaying](https://github.com/justeattakeaway/JustSaying) IMessagePublisher replacements to perform different functions
 
+Use latest v8 release for JustSaying v8, or v7 releases for JustSaying v7.
+
 ## QueuedMessagePublisher
 
 A publisher that queues messages to be published at a later time. This is useful for when you want to publish messages in UoW functionality and you don't want to send the messages until the UoW is committed.
