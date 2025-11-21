@@ -8,9 +8,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2D05F95D-7F3C-465B-8AEE-FC8DAE0983E5}"
 	ProjectSection(SolutionItems) = preProject
 		..\README.md = ..\README.md
-		docker-compose-reset-containers.sh = docker-compose-reset-containers.sh
-		docker-compose-run-tests.sh = docker-compose-run-tests.sh
-		docker-compose.yml = docker-compose.yml
 		Dockerfile = Dockerfile
 	EndProjectSection
 EndProject

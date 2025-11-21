@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using DotNet.Testcontainers.Builders;
 using JustSaying.Extensions.DependencyInjection.SimpleInjector;
 using JustSaying.FlexiblePublishers.IntegrationTests.Queued.Messages;
 using JustSaying.FlexiblePublishers.Queued;
@@ -13,6 +14,7 @@ using NUnit.Framework;
 using Serilog;
 using SimpleInjector;
 using SimpleInjector.Lifestyles;
+using Testcontainers.LocalStack;
 
 namespace JustSaying.FlexiblePublishers.IntegrationTests;
 
@@ -22,6 +24,9 @@ public class Bootstrapper
     public static ILoggerFactory LoggerFactory { get; private set; }
 
     public static Container Container { get; private set; }
+
+    private static LocalStackContainer _localStackContainer;
+    private static string _localStackServiceUrl;
 
     [OneTimeSetUp]
     public async Task FixtureSetup()
@@ -41,12 +46,47 @@ public class Bootstrapper
         logger.Information("Configured logging");
         TestContext.Progress.WriteLine("Configured logging");
 
+        // Start LocalStack container
+        logger.Information("Starting LocalStack container...");
+        TestContext.Progress.WriteLine("Starting LocalStack container...");
+
+        _localStackContainer = new LocalStackBuilder()
+            .WithImage("localstack/localstack:latest")
+            .WithWaitStrategy(Wait.ForUnixContainer().UntilHttpRequestIsSucceeded(r => r.ForPath("/_localstack/health").ForPort(4566)))
+            .Build();
+
+        await _localStackContainer.StartAsync();
+
+        // Construct the service URL from the container's host and port
+        var host = _localStackContainer.Hostname;
+        var port = _localStackContainer.GetMappedPublicPort(4566);
+        _localStackServiceUrl = $"http://{host}:{port}";
+
+        logger.Information($"LocalStack container started at {_localStackServiceUrl}");
+        TestContext.Progress.WriteLine($"LocalStack container started at {_localStackServiceUrl}");
+
         try
         {
             Container = new Container();
             ConfigureInjection(Container);
 
-            Container.Verify();
+            // Set dummy AWS credentials to allow Container.Verify() to succeed
+            // These won't be used because LocalStack is configured with anonymous credentials
+            var originalAccessKey = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
+            var originalSecretKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY");
+            try
+            {
+                Environment.SetEnvironmentVariable("AWS_ACCESS_KEY_ID", "test");
+                Environment.SetEnvironmentVariable("AWS_SECRET_ACCESS_KEY", "test");
+
+                Container.Verify();
+            }
+            finally
+            {
+                // Restore original values
+                Environment.SetEnvironmentVariable("AWS_ACCESS_KEY_ID", originalAccessKey);
+                Environment.SetEnvironmentVariable("AWS_SECRET_ACCESS_KEY", originalSecretKey);
+            }
 
             logger.Information("Configured and verified runtime injection");
             TestContext.Progress.WriteLine("Configured and verified runtime injection");
@@ -71,10 +111,16 @@ public class Bootstrapper
     }
 
     [OneTimeTearDown]
-    public void FixtureTearDown()
+    public async Task FixtureTearDown()
     {
         Container?.Dispose();
         LoggerFactory?.Dispose();
+
+        if (_localStackContainer != null)
+        {
+            await _localStackContainer.StopAsync();
+            await _localStackContainer.DisposeAsync();
+        }
     }
 
     private static void ConfigureInjection(Container container)
@@ -95,10 +141,13 @@ public class Bootstrapper
 
         container.Register<QueuedMessagesMiddleware>(Lifestyle.Transient);
 
+        container.AddJustSayingNoOpMessageMonitor();
+
         var builder = container.AddJustSayingReturnBuilder(
-            new AwsConfig(null, null, "eu-west-1", "http://localhost.localstack.cloud:4566"),
-            null,
-            null,
+            new MessagingConfig{
+                Region = "eu-west-1",
+            },
+            _localStackServiceUrl,
             builder =>
             {
                 builder.Subscriptions(

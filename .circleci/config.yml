@@ -5,62 +5,112 @@ version: 2.1
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/jobs-steps/#jobs-overview & https://circleci.com/docs/configuration-reference/#jobs
 jobs:
-  test-build-package:
+  test-only:
+    machine:  # keep machine so Testcontainers can talk to Docker
+      image: ubuntu-2204:current
+    environment:
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+    steps:
+      - checkout
+
+      # (Optional) NuGet cache – speeds up restore
+      - restore_cache:
+          keys:
+            - v1-nuget-{{ arch }}-{{ checksum "src/JustSaying.FlexiblePublishers.sln" }}
+            - v1-nuget-
+
+      # Install .NET SDK 10.0 on the machine image
+      - run:
+          name: "Install .NET 10 SDK"
+          command: |
+            set -eux
+
+            wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
+            chmod +x dotnet-install.sh
+
+            # Install latest GA .NET 10 SDK into $HOME/.dotnet
+            ./dotnet-install.sh \
+              --channel 10.0 \
+              --quality GA \
+              --install-dir "$HOME/.dotnet"
+
+            # Make it available to later steps
+            echo 'export DOTNET_ROOT="$HOME/.dotnet"' >> "$BASH_ENV"
+            echo 'export PATH="$HOME/.dotnet:$PATH"' >> "$BASH_ENV"
+            source "$BASH_ENV"
+
+            dotnet --info
+
+      - run:
+          name: "dotnet restore"
+          command: |
+            dotnet restore ./src/JustSaying.FlexiblePublishers.sln
+
+      - save_cache:
+          key: v1-nuget-{{ arch }}-{{ checksum "src/JustSaying.FlexiblePublishers.sln" }}
+          paths:
+            - ~/.nuget/packages
+
+      - run:
+          name: "Run tests and convert TRX to JUnit"
+          command: |
+            # We want to always upload results, even if tests fail.
+            set +e
+            mkdir -p test-results/trx test-results/junit
+
+            # Run tests (Testcontainers will launch its Docker deps here)
+            dotnet test ./src/JustSaying.FlexiblePublishers.sln \
+              -c Release \
+              --tl:off \
+              --logger "trx" \
+              --results-directory test-results/trx
+            exit_code=$?
+
+            # Install trx2junit and convert
+            export PATH="$PATH:/home/circleci/.dotnet/tools:/root/.dotnet/tools"
+            dotnet tool install -g trx2junit
+            trx2junit test-results/trx/*.trx --output test-results/junit/
+
+            # Persist exit code for a later step so this step itself doesn't fail
+            echo $exit_code > /tmp/test_exit_code
+            exit 0
+
+      # Always publish JUnit to CircleCI (so you see green/red per test)
+      - store_test_results:
+          path: test-results/junit
+          when: always
+
+      # (Optional) Keep raw TRX as artifacts for debugging
+      - store_artifacts:
+          path: test-results
+          destination: test-results
+          when: always
+
+      # Now fail the job if tests failed
+      - run:
+          name: "Fail the job if tests failed"
+          command: |
+            exit $(cat /tmp/test_exit_code)
+
+  build-publish:
     machine: # executor type
       image: ubuntu-2204:current
       docker_layer_caching: true
     steps:
         - checkout
-#        - setup_remote_docker:
-#            docker_layer_caching: true
         - run:
             name: "Store the tag in the workspace"
             command: |
               mkdir workspace
               [[ -z "${CIRCLE_PULL_REQUEST}" ]] && PR_TAG='' || PR_TAG="-pre.${CIRCLE_PULL_REQUEST##*/}"
-              echo "export TAG=7.1.$CIRCLE_BUILD_NUM$PR_TAG" > workspace/version_tag
+              echo "export TAG=8.1.$CIRCLE_BUILD_NUM$PR_TAG" > workspace/version_tag
               cat workspace/version_tag
         - run:
             name: "Define Environment Variables at Runtime"
             command: |
               cat workspace/version_tag >> "$BASH_ENV"
               echo "$BASH_ENV"
-              source "$BASH_ENV"
-        - persist_to_workspace:
-            root: workspace
-            paths:
-              - version_tag
-        - run:
-            name: "Run tests"
-            # We run the docker compose build, then fetch the test results from the volume and copy them to the host
-            # We handle the transform from trx to junit within the docker compose testrunner step
-            # see: https://stackoverflow.com/questions/35406213/how-to-copy-data-from-docker-volume-to-host
-            command: |
-              cp README.md src/
-              docker-compose -f ./src/docker-compose.yml up --build --abort-on-container-exit --exit-code-from testrunner
-              mkdir test-results
-              docker volume ls
-              docker run --rm -v src_test-results:/src -v ./test-results:/dest alpine sh -c 'cp -Rv /src/* /dest/'
-              ls -la test-results
-        - store_test_results:
-            path: test-results
-   
-  publish:
-    docker:
-      - image: cimg/base:stable
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASSWORD
-    steps:
-        - setup_remote_docker:
-           docker_layer_caching: true
-        - checkout
-        - attach_workspace:
-            at: workspace
-        - run:
-            name: "Define Environment Variables at Runtime"
-            command: |
-              cat workspace/version_tag >> "$BASH_ENV"
               source "$BASH_ENV"
         - run:
             name: "Publish NuGet packages"
@@ -74,14 +124,14 @@ workflows:
   build-test-push-workflow: # This is the name of the workflow, feel free to change it to better match your workflow.
     # Inside the workflow, you define the jobs you want to run.
     jobs:
-      - test-build-package:
-          context: 
+      - test-only:
+          context:
             - Global
       - hold:
           type: approval
           requires:
-            - test-build-package
-      - publish:
+            - test-only
+      - build-publish:
           requires:
             - hold
           context: 
