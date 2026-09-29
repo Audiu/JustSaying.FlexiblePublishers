@@ -127,12 +127,19 @@ workflows:
       - test-only:
           context:
             - Global
+      # Live path (on-hold notice, approval, live release) runs on master only: PR and branch builds end after test.
       - hold:
           type: approval
           requires:
             - test-only
+          filters:
+            branches:
+              only: master
       - build-publish:
           requires:
             - hold
           context: 
             - Global
+          filters:
+            branches:
+              only: master
