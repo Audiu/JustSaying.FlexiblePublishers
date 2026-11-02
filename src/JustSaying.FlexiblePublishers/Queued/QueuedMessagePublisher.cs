@@ -93,6 +93,8 @@ namespace JustSaying.FlexiblePublishers.Queued
                     {
                         if (!onlySendWhitelisted || container.IsWhitelisted)
                         {
+                            var published = false;
+
                             try
                             {
                                 if (container.Metadata != null)
@@ -104,11 +106,20 @@ namespace JustSaying.FlexiblePublishers.Queued
                                     await _lazyMessagePublisher.Value.PublishAsync(container.Message, cancellationToken).ConfigureAwait(false);
                                 }
 
+                                published = true;
+
                                 _logger.LogInformation($"Published message successfully - MessageType: {messageType}");
                             }
                             catch (Exception ex)
                             {
                                 _logger.LogError(ex, $"Failed to post message - MessageType: {messageType}");
+
+                                OnMessagePublishFailed(container.Message, ex);
+                            }
+
+                            if (published)
+                            {
+                                OnMessagePublished(container.Message);
                             }
                         }
                         else
@@ -122,6 +133,23 @@ namespace JustSaying.FlexiblePublishers.Queued
 
                 _logger.LogInformation("Finished sending queued messages");
             }
+        }
+
+        /// <summary>
+        /// Called by <see cref="ProcessQueueAsync"/> after the bus accepted a queued message. The queue logs and
+        /// swallows a failed send, so a subclass that must know what actually left (for example to mark an outbox
+        /// row sent) records it here rather than assuming every queued message was sent.
+        /// </summary>
+        protected virtual void OnMessagePublished(Message message)
+        {
+        }
+
+        /// <summary>
+        /// Called by <see cref="ProcessQueueAsync"/> when sending a queued message failed. The failure has already
+        /// been logged and is not rethrown; the remaining queued messages are still sent.
+        /// </summary>
+        protected virtual void OnMessagePublishFailed(Message message, Exception exception)
+        {
         }
 
         public InterrogationResult Interrogate()

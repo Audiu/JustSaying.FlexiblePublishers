@@ -51,7 +51,7 @@ public class Bootstrapper
         TestContext.Progress.WriteLine("Starting LocalStack container...");
 
         _localStackContainer = new LocalStackBuilder()
-            .WithImage("localstack/localstack:latest")
+            .WithImage("localstack/localstack:4.14.0")
             .WithWaitStrategy(Wait.ForUnixContainer().UntilHttpRequestIsSucceeded(r => r.ForPath("/_localstack/health").ForPort(4566)))
             .Build();
 
